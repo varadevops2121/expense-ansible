@@ -1,15 +1,15 @@
-- name: configure fronted service
+- name: configure frontend server
   become: yes
   hosts: frontend
   tasks:
-  - name: install nginex server
+  - name: install nginx server
     ansible.builtin.dnf:
-      name: nginex
+      name: nginx
       state: latest
-        
-  - name: start and enable nginex
+    
+  - name: start and enable nginx
     ansible.builtin.service:
-      name: nginex
+      name: nginx
       state: started
       enabled: yes
 
