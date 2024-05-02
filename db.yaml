@@ -1,0 +1,32 @@
+- name: configure DB server
+  hosts: db 
+  become: yes 
+  vars: 
+    login_host: db.b12nagafacebook.xyz
+  tasks: 
+  - name: install MySQL server 
+    ansible.builtin.dnf:
+      name: mysql-server
+      state: latest
+
+  - name: Start and Enable MySQL server
+    ansible.builtin.service:
+      name: mysqld 
+      state: started
+      enabled: yes 
+
+  - name: check DB connection
+    community.mysql.mysql_info:
+      login_user: root
+      ogin_password: ExpenseApp@1
+      login_host: "{{ login_host }}"
+      filter: version
+    ignore_errors: yes 
+    register: mysql_connection_output
+
+  - name: print output 
+    ansible.builtin.debug:
+      msg: "Output {{ mysql_connection_output }} "
+
+    
+
