@@ -2,6 +2,8 @@
   become: yes 
   hosts: backend 
   vars: 
+    login_host: db.lerndevops.online
+    login_password: ExpenseApp@1
   tasks:
   - name: disable default nodejs 
     ansible.builtin.command: dnf module disable nodejs -y
@@ -11,8 +13,12 @@
 
   - name: install nodejs 
     ansible.builtin.dnf: #onlyworks for redhat fafily 
-      name: nodejs 
+      name: "{{ item }}"
       state: installed 
+    loop: 
+    - nodejs 
+    - mysql 
+
 
   - name: create expense user 
     ansible.builtin.user:
@@ -35,7 +41,7 @@
       remote_src: yes
   
   - name: install npm dependencies
-    ansible.builtin.command:
+    ansible.builtin.command: npm install
     args:
       chdir: /app 
   
@@ -43,3 +49,29 @@
     ansible.builtin.copy:
       src: backend.service
       dest: /etc/systemd/system/backend.service 
+      
+  - name: install python mysql dependencies
+    ansible.builtin.pip: 
+      name:
+      - PyMySQL # to connect MySQL DB from Ansible
+      - cryptography
+      executable: pip3.9 # pip3.11 if python version is 3.11
+
+  - name: import data into mysql
+    community.mysql.mysql_db:
+      login_user: root
+      login_password: "{{ login_password }}"
+      login_host: "{{ login_host }}"
+      target: /app/schema/backend.sql
+      state: import
+      name: all
+
+  - name: daemon reload
+    ansible.builtin.systemd_service:
+      daemon_reload: true
+
+  - name: start and enable backend service
+    ansible.builtin.service:
+      name: backend
+      state: started
+      enabled: yes
