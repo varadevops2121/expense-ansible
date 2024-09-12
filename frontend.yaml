@@ -1,0 +1,16 @@
+- name: configure frontend server 
+  become: yes
+  hosts: frontend 
+  tasks: 
+  - name: install nginx server 
+    ansible.bultin.dnf: 
+      name: nginx 
+      state: latest 
+
+  - name: start and enable nginx 
+    ansible.bultin.service: 
+      name: nginx 
+      state: started 
+      enabled: yes 
+
+  -
